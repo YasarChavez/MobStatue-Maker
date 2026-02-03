@@ -139,12 +139,16 @@
             <div class="space-y-6">
                 <!-- Preview Visual -->
                 <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 flex flex-col items-center justify-center relative min-h-[220px]">
+                    <!-- Compass Ring -->
                     <div class="w-32 h-32 rounded-full border-2 border-slate-700 relative opacity-40 mb-4">
                         <div class="absolute top-0 left-1/2 -translate-x-1/2 text-[10px] font-bold">N</div>
                         <div class="absolute bottom-0 left-1/2 -translate-x-1/2 text-[10px] font-bold">S</div>
+                        <div class="absolute left-0 top-1/2 -translate-y-1/2 text-[10px] font-bold">E</div>
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-bold">O</div>
                     </div>
+                    <!-- Directional Arrow Preview -->
                     <div id="mobPreview" class="minecraft-preview absolute">
-                        <i data-lucide="box" class="w-12 h-12 text-emerald-500"></i>
+                        <i data-lucide="move-up" class="w-16 h-16 text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]"></i>
                     </div>
                     <div id="nameTagPreview" class="mt-2 bg-black/60 px-2 py-0.5 rounded text-[10px] text-white border border-white/20">Patuga</div>
                 </div>
@@ -226,6 +230,10 @@
             // Actualizar UI Visual
             nameTagPreview.innerText = name || "Sin nombre";
             nameTagPreview.style.display = (checkNameVis.checked && name) ? 'block' : 'none';
+            
+            // En Minecraft 0 es Sur, 90 Oeste, 180 Norte, 270 Este. 
+            // La flecha (move-up) apunta por defecto hacia arriba (Norte).
+            // Ajustamos la rotación visual para que coincida con la lógica de MC.
             mobPreview.style.transform = `rotate(${currentRot - 180}deg)`;
             
             const labels = {0: 'Sur (0°)', 90: 'Oeste (90°)', 180: 'Norte (180°)', 270: 'Este (-90°)'};
