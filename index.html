@@ -12,6 +12,16 @@
         body { font-family: 'Inter', sans-serif; }
         .minecraft-preview { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         .mode-active { background-color: #059669 !important; color: white !important; shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        
+        /* Efecto de brillo para la vista previa */
+        .glowing-effect {
+            filter: drop-shadow(0 0 15px #10b981) drop-shadow(0 0 5px #ffffff);
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8">
@@ -117,6 +127,13 @@
                                 <span class="text-xs text-slate-500">Invulnerable:1b</span>
                             </div>
                         </label>
+                        <label class="attr-card flex items-center p-3 rounded-lg border border-slate-700 bg-slate-900 cursor-pointer transition-all">
+                            <input type="checkbox" id="checkGlow" class="mr-3 accent-emerald-500">
+                            <div>
+                                <span class="block font-medium">Brillo (Glowing)</span>
+                                <span class="text-xs text-slate-500">Glowing:1b</span>
+                            </div>
+                        </label>
                         <label class="attr-card flex items-center p-3 rounded-lg border border-slate-700 bg-slate-900 cursor-pointer">
                             <input type="checkbox" id="checkBaby" class="mr-3 accent-emerald-500">
                             <div>
@@ -148,7 +165,7 @@
                     </div>
                     <!-- Directional Arrow Preview -->
                     <div id="mobPreview" class="minecraft-preview absolute">
-                        <i data-lucide="move-up" class="w-16 h-16 text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]"></i>
+                        <i id="previewIcon" data-lucide="move-up" class="w-16 h-16 text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]"></i>
                     </div>
                     <div id="nameTagPreview" class="mt-2 bg-black/60 px-2 py-0.5 rounded text-[10px] text-white border border-white/20">Patuga</div>
                 </div>
@@ -159,7 +176,7 @@
                         <span id="outputTitle" class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Comando /summon</span>
                     </div>
                     <textarea id="commandOutput" readonly class="w-full h-40 bg-slate-900/80 text-emerald-400 font-mono text-xs p-3 rounded-lg resize-none outline-none border border-emerald-500/20"></textarea>
-                    <button id="copyBtn" class="w-full mt-3 bg-emerald-600 hover:bg-emerald-500 py-2 rounded-lg font-bold flex items-center justify-center gap-2 transition-all">
+                    <button id="copyBtn" class="w-full mt-3 bg-emerald-600 hover:bg-emerald-500 py-2 rounded-lg font-bold flex items-center justify-center gap-2 transition-all text-sm uppercase tracking-wider">
                         <i data-lucide="copy" class="w-4 h-4"></i> Copiar Comando
                     </button>
                 </div>
@@ -177,11 +194,13 @@
         const rotButtons = document.querySelectorAll('.rot-btn');
         const checkStatue = document.getElementById('checkStatue');
         const checkInvul = document.getElementById('checkInvul');
+        const checkGlow = document.getElementById('checkGlow');
         const checkBaby = document.getElementById('checkBaby');
         const checkNameVis = document.getElementById('checkNameVis');
         const commandOutput = document.getElementById('commandOutput');
         const copyBtn = document.getElementById('copyBtn');
         const mobPreview = document.getElementById('mobPreview');
+        const previewIcon = document.getElementById('previewIcon');
         const nameTagPreview = document.getElementById('nameTagPreview');
         const rotLabel = document.getElementById('rotLabel');
         const outputTitle = document.getElementById('outputTitle');
@@ -201,9 +220,9 @@
             const tags = [];
             tags.push(`Rotation:[${currentRot}f,0f]`);
             
-            // Para el modo summon o merge, los valores se manejan igual
             tags.push(checkStatue.checked ? 'NoAI:1b' : 'NoAI:0b');
             tags.push(checkInvul.checked ? 'Invulnerable:1b' : 'Invulnerable:0b');
+            tags.push(checkGlow.checked ? 'Glowing:1b' : 'Glowing:0b');
             tags.push('PersistenceRequired:1b');
             
             if (name) tags.push(`CustomName:'"${name}"'`);
@@ -215,12 +234,10 @@
             let finalCommand = "";
             if (currentMode === 'summon') {
                 outputTitle.innerText = "Comando /summon";
-                // En summon, solo incluimos los tags activos (1b) para limpiar el comando
                 const summonTags = tags.filter(t => !t.endsWith(':0b'));
                 finalCommand = `/summon ${type} ~ ~ ~ {${summonTags.join(',')}}`;
             } else {
                 outputTitle.innerText = "Comando /data merge";
-                // En merge, especificamos el selector del mob más cercano del tipo elegido
                 const selector = `@e[type=${type},sort=nearest,limit=1]`;
                 finalCommand = `/data merge entity ${selector} {${tags.join(',')}}`;
             }
@@ -231,10 +248,17 @@
             nameTagPreview.innerText = name || "Sin nombre";
             nameTagPreview.style.display = (checkNameVis.checked && name) ? 'block' : 'none';
             
-            // En Minecraft 0 es Sur, 90 Oeste, 180 Norte, 270 Este. 
-            // La flecha (move-up) apunta por defecto hacia arriba (Norte).
-            // Ajustamos la rotación visual para que coincida con la lógica de MC.
+            // Aplicar rotación
             mobPreview.style.transform = `rotate(${currentRot - 180}deg)`;
+            
+            // Aplicar efecto de brillo a la previsualización
+            if (checkGlow.checked) {
+                previewIcon.classList.add('glowing-effect');
+                previewIcon.classList.replace('text-emerald-500', 'text-white');
+            } else {
+                previewIcon.classList.remove('glowing-effect');
+                previewIcon.classList.replace('text-white', 'text-emerald-500');
+            }
             
             const labels = {0: 'Sur (0°)', 90: 'Oeste (90°)', 180: 'Norte (180°)', 270: 'Este (-90°)'};
             rotLabel.innerText = labels[currentRot];
@@ -260,7 +284,7 @@
         });
 
         // Listeners de cambios
-        [mobType, customName, checkStatue, checkInvul, checkBaby, checkNameVis].forEach(el => {
+        [mobType, customName, checkStatue, checkInvul, checkGlow, checkBaby, checkNameVis].forEach(el => {
             el.addEventListener('input', () => {
                 if (el.type === 'checkbox') {
                     const card = el.closest('.attr-card');
