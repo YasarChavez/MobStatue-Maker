@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MobStatue Maker - Minecraft</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .minecraft-preview { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .mode-active { background-color: #059669 !important; color: white !important; shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-slate-700 pb-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-emerald-600 p-2 rounded-lg shadow-lg">
+                    <i data-lucide="box" class="text-white w-8 h-8"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                        MobStatue Maker
+                    </h1>
+                    <p class="text-slate-400 text-sm">Generador de estatuas para Yasar y Victoria</p>
+                </div>
+            </div>
+            <!-- Modo de Operación -->
+            <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
+                <button id="btnSummon" class="mode-active px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Invocar
+                </button>
+                <button id="btnMerge" class="px-4 py-2 rounded-lg text-sm font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i> Editar
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left Column: Controls -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Basic Info Card -->
+                <div class="bg-slate-800 rounded-xl p-6 shadow-xl border border-slate-700">
+                    <h2 class="text-lg font-semibold mb-4 text-emerald-400 flex items-center gap-2">
+                        <i data-lucide="settings-2" class="w-5 h-5"></i> Configuración de Entidad
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-slate-500 mb-1 font-bold">Tipo de Entidad</label>
+                            <select id="mobType" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500">
+                                <optgroup label="Comunes">
+                                    <option value="minecraft:chicken">Pollo (Chicken)</option>
+                                    <option value="minecraft:armor_stand">Soporte de Armadura</option>
+                                    <option value="minecraft:villager">Aldeano</option>
+                                    <option value="minecraft:iron_golem">Gólem de Hierro</option>
+                                </optgroup>
+                                <optgroup label="Animales">
+                                    <option value="minecraft:fox">Zorro</option>
+                                    <option value="minecraft:cat">Gato</option>
+                                    <option value="minecraft:wolf">Lobo</option>
+                                    <option value="minecraft:axolotl">Ajolote</option>
+                                    <option value="minecraft:bee">Abeja</option>
+                                </optgroup>
+                                <optgroup label="Hostiles">
+                                    <option value="minecraft:zombie">Zombie</option>
+                                    <option value="minecraft:skeleton">Esqueleto</option>
+                                    <option value="minecraft:creeper">Creeper</option>
+                                    <option value="minecraft:warden">Warden</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-slate-500 mb-1 font-bold">Nombre (CustomName)</label>
+                            <input id="customName" type="text" value="Patuga" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+
+                    <!-- Rotation -->
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 mb-2 font-bold">Orientación: <span id="rotLabel" class="text-emerald-400">Sur (0°)</span></label>
+                        <div class="grid grid-cols-4 gap-2" id="rotButtons">
+                            <button data-rot="0" class="rot-btn py-2 rounded-lg bg-emerald-600 text-white font-bold border border-emerald-500">0°</button>
+                            <button data-rot="90" class="rot-btn py-2 rounded-lg bg-slate-900 text-slate-400 border border-slate-700 hover:border-slate-500">90°</button>
+                            <button data-rot="180" class="rot-btn py-2 rounded-lg bg-slate-900 text-slate-400 border border-slate-700 hover:border-slate-500">180°</button>
+                            <button data-rot="270" class="rot-btn py-2 rounded-lg bg-slate-900 text-slate-400 border border-slate-700 hover:border-slate-500">-90°</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attributes Card -->
+                <div class="bg-slate-800 rounded-xl p-6 shadow-xl border border-slate-700">
+                    <h2 class="text-lg font-semibold mb-4 text-emerald-400 flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i> Atributos (NBT Tags)
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <label class="attr-card flex items-center p-3 rounded-lg border border-emerald-500/50 bg-emerald-900/20 cursor-pointer">
+                            <input type="checkbox" id="checkStatue" checked class="mr-3 accent-emerald-500">
+                            <div>
+                                <span class="block font-medium">Modo Estatua</span>
+                                <span class="text-xs text-slate-500">NoAI:1b</span>
+                            </div>
+                        </label>
+                        <label class="attr-card flex items-center p-3 rounded-lg border border-emerald-500/50 bg-emerald-900/20 cursor-pointer">
+                            <input type="checkbox" id="checkInvul" checked class="mr-3 accent-emerald-500">
+                            <div>
+                                <span class="block font-medium">Invulnerable</span>
+                                <span class="text-xs text-slate-500">Invulnerable:1b</span>
+                            </div>
+                        </label>
+                        <label class="attr-card flex items-center p-3 rounded-lg border border-slate-700 bg-slate-900 cursor-pointer">
+                            <input type="checkbox" id="checkBaby" class="mr-3 accent-emerald-500">
+                            <div>
+                                <span class="block font-medium">Bebé</span>
+                                <span class="text-xs text-slate-500">Age:-25000</span>
+                            </div>
+                        </label>
+                        <label class="attr-card flex items-center p-3 rounded-lg border border-emerald-500/50 bg-emerald-900/20 cursor-pointer">
+                            <input type="checkbox" id="checkNameVis" checked class="mr-3 accent-emerald-500">
+                            <div>
+                                <span class="block font-medium">Nombre Visible</span>
+                                <span class="text-xs text-slate-500">Visible:1b</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Output -->
+            <div class="space-y-6">
+                <!-- Preview Visual -->
+                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 flex flex-col items-center justify-center relative min-h-[220px]">
+                    <div class="w-32 h-32 rounded-full border-2 border-slate-700 relative opacity-40 mb-4">
+                        <div class="absolute top-0 left-1/2 -translate-x-1/2 text-[10px] font-bold">N</div>
+                        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 text-[10px] font-bold">S</div>
+                    </div>
+                    <div id="mobPreview" class="minecraft-preview absolute">
+                        <i data-lucide="box" class="w-12 h-12 text-emerald-500"></i>
+                    </div>
+                    <div id="nameTagPreview" class="mt-2 bg-black/60 px-2 py-0.5 rounded text-[10px] text-white border border-white/20">Patuga</div>
+                </div>
+
+                <!-- Command Output -->
+                <div class="bg-black/40 rounded-xl p-4 border border-slate-700">
+                    <div class="flex justify-between items-center mb-2">
+                        <span id="outputTitle" class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Comando /summon</span>
+                    </div>
+                    <textarea id="commandOutput" readonly class="w-full h-40 bg-slate-900/80 text-emerald-400 font-mono text-xs p-3 rounded-lg resize-none outline-none border border-emerald-500/20"></textarea>
+                    <button id="copyBtn" class="w-full mt-3 bg-emerald-600 hover:bg-emerald-500 py-2 rounded-lg font-bold flex items-center justify-center gap-2 transition-all">
+                        <i data-lucide="copy" class="w-4 h-4"></i> Copiar Comando
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar Iconos
+        lucide.createIcons();
+
+        // Elementos
+        const mobType = document.getElementById('mobType');
+        const customName = document.getElementById('customName');
+        const rotButtons = document.querySelectorAll('.rot-btn');
+        const checkStatue = document.getElementById('checkStatue');
+        const checkInvul = document.getElementById('checkInvul');
+        const checkBaby = document.getElementById('checkBaby');
+        const checkNameVis = document.getElementById('checkNameVis');
+        const commandOutput = document.getElementById('commandOutput');
+        const copyBtn = document.getElementById('copyBtn');
+        const mobPreview = document.getElementById('mobPreview');
+        const nameTagPreview = document.getElementById('nameTagPreview');
+        const rotLabel = document.getElementById('rotLabel');
+        const outputTitle = document.getElementById('outputTitle');
+        
+        // Botones de Modo
+        const btnSummon = document.getElementById('btnSummon');
+        const btnMerge = document.getElementById('btnMerge');
+
+        let currentRot = 0;
+        let currentMode = 'summon'; // 'summon' o 'merge'
+
+        function updateCommand() {
+            const type = mobType.value;
+            const name = customName.value;
+            
+            // Tags NBT comunes
+            const tags = [];
+            tags.push(`Rotation:[${currentRot}f,0f]`);
+            
+            // Para el modo summon o merge, los valores se manejan igual
+            tags.push(checkStatue.checked ? 'NoAI:1b' : 'NoAI:0b');
+            tags.push(checkInvul.checked ? 'Invulnerable:1b' : 'Invulnerable:0b');
+            tags.push('PersistenceRequired:1b');
+            
+            if (name) tags.push(`CustomName:'"${name}"'`);
+            tags.push(checkNameVis.checked && name ? 'CustomNameVisible:1b' : 'CustomNameVisible:0b');
+            
+            if (checkBaby.checked) tags.push('Age:-25000');
+            else if (currentMode === 'merge') tags.push('Age:0');
+
+            let finalCommand = "";
+            if (currentMode === 'summon') {
+                outputTitle.innerText = "Comando /summon";
+                // En summon, solo incluimos los tags activos (1b) para limpiar el comando
+                const summonTags = tags.filter(t => !t.endsWith(':0b'));
+                finalCommand = `/summon ${type} ~ ~ ~ {${summonTags.join(',')}}`;
+            } else {
+                outputTitle.innerText = "Comando /data merge";
+                // En merge, especificamos el selector del mob más cercano del tipo elegido
+                const selector = `@e[type=${type},sort=nearest,limit=1]`;
+                finalCommand = `/data merge entity ${selector} {${tags.join(',')}}`;
+            }
+
+            commandOutput.value = finalCommand;
+
+            // Actualizar UI Visual
+            nameTagPreview.innerText = name || "Sin nombre";
+            nameTagPreview.style.display = (checkNameVis.checked && name) ? 'block' : 'none';
+            mobPreview.style.transform = `rotate(${currentRot - 180}deg)`;
+            
+            const labels = {0: 'Sur (0°)', 90: 'Oeste (90°)', 180: 'Norte (180°)', 270: 'Este (-90°)'};
+            rotLabel.innerText = labels[currentRot];
+        }
+
+        // Cambio de Modo
+        btnSummon.addEventListener('click', () => {
+            currentMode = 'summon';
+            btnSummon.classList.add('mode-active');
+            btnSummon.classList.remove('text-slate-400');
+            btnMerge.classList.remove('mode-active');
+            btnMerge.classList.add('text-slate-400');
+            updateCommand();
+        });
+
+        btnMerge.addEventListener('click', () => {
+            currentMode = 'merge';
+            btnMerge.classList.add('mode-active');
+            btnMerge.classList.remove('text-slate-400');
+            btnSummon.classList.remove('mode-active');
+            btnSummon.classList.add('text-slate-400');
+            updateCommand();
+        });
+
+        // Listeners de cambios
+        [mobType, customName, checkStatue, checkInvul, checkBaby, checkNameVis].forEach(el => {
+            el.addEventListener('input', () => {
+                if (el.type === 'checkbox') {
+                    const card = el.closest('.attr-card');
+                    if (el.checked) {
+                        card.classList.add('bg-emerald-900/20', 'border-emerald-500/50');
+                        card.classList.remove('bg-slate-900', 'border-slate-700');
+                    } else {
+                        card.classList.remove('bg-emerald-900/20', 'border-emerald-500/50');
+                        card.classList.add('bg-slate-900', 'border-slate-700');
+                    }
+                }
+                updateCommand();
+            });
+        });
+
+        rotButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentRot = parseInt(btn.dataset.rot);
+                rotButtons.forEach(b => {
+                    b.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-500');
+                    b.classList.add('bg-slate-900', 'text-slate-400', 'border-slate-700');
+                });
+                btn.classList.add('bg-emerald-600', 'text-white', 'border-emerald-500');
+                btn.classList.remove('bg-slate-900', 'text-slate-400', 'border-slate-700');
+                updateCommand();
+            });
+        });
+
+        copyBtn.addEventListener('click', () => {
+            commandOutput.select();
+            document.execCommand('copy');
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> ¡Copiado!`;
+            lucide.createIcons();
+            copyBtn.classList.replace('bg-emerald-600', 'bg-blue-600');
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                lucide.createIcons();
+                copyBtn.classList.replace('bg-blue-600', 'bg-emerald-600');
+            }, 2000);
+        });
+
+        // Inicializar
+        updateCommand();
+    </script>
+</body>
+</html>
